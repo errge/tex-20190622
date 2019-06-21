@@ -1,0 +1,18 @@
+%\tracingcommands2
+%\tracingmacros1
+%\tracingonline1
+\tracingall
+
+\def\sosem#1{Sosem beszelek #1 orajan\par}
+\def\gs{\sosem{Gergo}}
+
+% \loop: #1\repeat ->\def \body {#1}\iterate .
+% \repeat: \repeat=\fi.
+% \iterate: ->\body \let \next \iterate \else \let \next \relax \fi \next .
+
+{
+\newcount\tizszer
+\loop\gs\advance\tizszer by 1\ifnum\tizszer<10\repeat
+}
+
+\end

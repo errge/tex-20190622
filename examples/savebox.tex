@@ -1,0 +1,12 @@
+\documentclass{minimal}
+
+\newbox\dobozom
+\newenvironment{ezegydoboz}{\setbox\dobozom\vbox\bgroup}{\egroup\the\wd\dobozom\the\ht\dobozom}
+
+\begin{document}
+  \begin{ezegydoboz}
+    foobar
+
+    foobar
+  \end{ezegydoboz}
+\end{document}

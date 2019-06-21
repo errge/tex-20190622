@@ -1,0 +1,13 @@
+\def\sosem#1{Sosem beszelek #1 orajan\par}
+\def\gs{\sosem{Gergo}}
+
+% \loop: #1\repeat ->\def \body {#1}\iterate .
+% \repeat: \repeat=\fi.
+% \iterate: ->\body \let \next \iterate \else \let \next \relax \fi \next .
+
+{
+\newcount\ezerszer
+\loop\gs\advance\ezerszer by 1\ifnum\ezerszer<1000\repeat
+}
+
+\bye

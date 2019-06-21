@@ -1,0 +1,373 @@
+%% -*- latex -*-
+\newtoks\nicsroot\directlua{ tex.settoks("nicsroot", os.getenv("NICS_ROOT") or error("NICS_ROOT environment variable has to be set, use the Makefile")) }
+\input{\the\nicsroot /src/nics-cached.tex}
+\endofdump
+\input{\the\nicsroot /src/nics-noncached.tex}
+
+\hypersetup{pdftitle={LaTeX + nics}}
+
+\begin{document}
+
+\section{Intró}
+% TODO: kep
+\begin{slide}{Agenda}{}
+  \begin{nicscolumn}
+    \nicsitem{Célok: különböző módszerek előadás slidok írásra}
+    \nicsitem{Történelem: miért vált ez most nekem aktuálissá}
+    \nicsitem{Feladat: Getting Started with Nics}
+    \nicsitem{Nics demó és feature összefoglaló}
+    \nicsitem{Nics ötletek, kód walkthrough}
+    \nicsitem{De közben mindig figyelve az érdekes \TeX\ tudás megbeszélésére}
+    \nicsitem{Bug fixing in nics, live coding}
+  \end{nicscolumn}
+\end{slide}
+
+\section{Meglévő módszerek}
+%TODO: kep
+\begin{slide}{Népszerű módszerek}{WYSIWYG}
+  \begin{nicscolumn}
+    \nicsitem{Microsoft PowerPoint}
+    \begin{nicsindent}
+      \nicsitem{nagyon gyorsan lehet haladni}
+      \nicsitem{szép a kimenet}
+      \nicsitem{de nem időtálló a kimenet (a PDF export igen)}
+      \nicsitem{problémás greppelni és copy-pastelni}
+      \nicsitem{problémás és munkás kódot színezni}
+      \nicsitem{problémás a branching és a teamwork}
+      \nicsitem{személyes preferencia: hate everything WYSIWYG}
+    \end{nicsindent}
+    \nicsitem{Google Slides}
+    \begin{nicsindent}
+      \nicsitem{all the same: még a teamwork sem jobb sokkal}
+      \nicsitem{személyes pereferencia: love Google sooooooo much}
+    \end{nicsindent}
+  \end{nicscolumn}
+\end{slide}
+
+\begin{slide}{Népszerű módszerek}{Markdown, Asciidoc, RST, Emacs Org mód}
+  \begin{nicscolumn}
+    \nicsitem{Markdown + Pandoc}
+    \begin{nicsindent}
+      \nicsitem{van forrás kód, amit gitbe lehet tolni}
+      \nicsitem{nagyon népszerű, meetupokon ezt használják}
+      \nicsitem{a kód színezés is valamennyire meg van oldva}
+      \nicsitem{nagyon-nagyon WYGIWYG, nem flexibilis at all}
+      \nicsitem{pl. nem lehet cím slidera extra kontentet írni}
+    \end{nicsindent}
+    \nicsitem{Nilcons status quo: Emacs Org mód + org-reveal(js)}
+    \begin{nicsindent}
+      \nicsitem{valamennyire flexibilis}
+      \nicsitem{diagrammok még mindig problémásak \raise1pt\hbox{\Rightarrow}\ inkább nem csinálok}
+      \nicsitem{HTML-t generál ami kicsit flaky: resolution és böngésző függő}
+      \nicsitem{build stability: dockerből futtatjuk a batch emacsot}
+    \end{nicsindent}
+  \end{nicscolumn}
+\end{slide}
+
+\section{Aktualitás}
+% TODO: kep
+\begin{slide}{Aktualitás}{Miért lett ez most érdekes}
+  \begin{nicscolumn}
+    \nicsitem{Kubernetes + Cég: viszonylag sok óra}
+    \nicsitem{Nehéz téma, sok buktatóval, amit sokszor kell előadnom}
+    \nicsitem{Szeretném mindig kb. ugyanazt a minimumot mondani}
+    \nicsitem{Adtak slidokat, amikből két verzió van}
+    \begin{nicsindent}
+      \nicsitem{Régi motorosok: Google Slidesba konvertált PowerPoint}
+      \begin{nicsindent}
+        \nicsitem{Full of bugs that nobody updates}
+        \nicsitem{Persze én elkezdhetem javítgatni, de history, merging?}
+      \end{nicsindent}
+      \nicsitem{Új ifjú titánok: Markdown PDF és HTML outputtal (Google Slidesból)}
+      \begin{nicsindent}
+        \nicsitem{Visual bugs: slide kilóg, scrollbar screenshot in PDF (demó)}
+        \nicsitem{PowerPoint konverzió: szó-szó, amit nehéz volt, azt inkább nem}
+        \nicsitem{Diagrammok screenshotokká váltak: no updates/fixes possible}
+      \end{nicsindent}
+    \end{nicsindent}
+  \end{nicscolumn}
+\end{slide}
+
+\begin{slide}{Aktualitás}{Véleményváltozás: egy kép többet mond 100 szónál}
+  \begin{nicscolumn}
+    \nicsitem{A PowerPoint slidokat annak idején még meg is szépíttette a Cég}
+    \nicsitem{Meggyőzőtt: diagrammok egy CS előadásban jók, szöveg nem elég}
+    \nicsitem{Mindig lehet táblára rajzolni, de az időhúzás, amit nem szeretek}
+    \nicsitem{A slidokat szeretem jóra csinálni: nincs jegyzetelés}
+    \nicsmedskip
+    \nicsitem{Oké, de mi a baj a \LaTeX\ Beamer-rel?}
+    \begin{nicsindent}
+      \nicsitem{Nagyon lassú fordítás, 100 slide kb. 0.5-1 perc}
+      \nicsitem{Nagyon sok mindenhez kell StackOverflowzni}
+      \nicsitem{Szép kinézethez csomagok tömkelegét kell összeházasítani}
+      \nicsitem{Random spacing issues, random megjósolhatatlan működés}
+      \nicsitem{Ha valami nekem random, akkor másnak impossible}
+      \nicsitem{Everyone will hate me, including future myself}
+    \end{nicsindent}
+  \end{nicscolumn}
+\end{slide}
+
+\section{Getting started}
+% TODO: kép
+\begin{slide}{Getting started}{Download, compile, view}
+  \begin{nicscolumn}
+    \nicsitem{\url{https://nics.nilcons.com/}}
+    \nicsitem{\url{https://github.com/nilcons/nics}}
+    \nicsitem{Debian buster: lucky you, go to docker branch and do the apt-get}
+    \nicsitem{Linux: just make sure Docker hello-world works}
+    \nicsitem{osx: Docker Desktop for Mac}
+    \nicsitem{windows 10: WSL + debian buster + apt-get install}
+  \end{nicscolumn}
+\end{slide}
+
+\section{Feature overview}
+% TODO: kép
+\begin{slide}{Features}{Ötletek, requirements, implementation tricks}
+  \begin{nicscolumn}
+    \nicsitem{Demó: feature demonstration pdf}
+    \nicsitem{Demó: source kódja, nagyon struktúrált, explicit}
+    \nicsitem{Adjuk a build rendszert}
+    \begin{nicsindent}
+      \nicsitem{lehet caching, meg exporting}
+      \nicsitem{lehet bonyolult kód színezés}
+      \nicsitem{lehet gyors (\TeX\ format)}
+    \end{nicsindent}
+    \nicsitem{Memory is cheap: mindent kirenderelünk boxokba, no triple-compile}
+    \nicsitem{Slidok közti automatikus tördelés nem kell: shipout}
+    \nicsitem{Mi kontrollálunk mindent: absolute positioning easy}
+    \nicsitem{Absolute positioning is all you need: disable margins all}
+    \nicsitem{Full screen pictures are easy after this}
+  \end{nicscolumn}
+\end{slide}
+
+\begin{slide}{Features}{Build system}
+  \begin{nicscolumn}
+    \nicsitem{Assumption: you use git}
+    \nicsitem{Kell egy submodulet betenned a nicshez}
+    \nicsitem{Így könnyen tudsz upgradelni (és ha valamit elcsesztem, rollbackelni)}
+    \nicsitem{De az előadásaid privátok maradhatnak}
+    \nicsitem{Your Makefile: specify nicsroot + include my nics makefile}
+    \nicsitem{Reproducibility: Docker (és a \TeX magától is elég jó)}
+    \nicsitem{Confidence: MD5 a PPM konverzióról laponként \\ (TODO: oldalszám nélkül)}
+    \nicsitem{A PDF-et bekommitolni controversial, esetleg Git LFS?}
+  \end{nicscolumn}
+\end{slide}
+
+\begin{slide}{Implementation}{Lua\TeX\ is awesome}
+  \begin{nicscolumn}
+    \nicsitem{A \TeX-nek nincs programozási nyelve}
+    \nicsitem{Csak egy makrónyelve, ami versenyzik az m4-gyel jóságban}
+    \nicsitem{Lua\TeX: olyan \TeX\ engine, amiben lehet luában is kódolni}
+    \begin{nicsindent}
+      \nicsitem{és úgy egyébként is modern: unicode, PDF, etex}
+      \nicsitem{elég jó dokumentáció, de érteni kell az alapokat: \TeX Book}
+      \nicsitem{az átjárás és call convention lehetne jobb}
+      \nicsitem{aktív fejlesztés alatt, de már most nagyon jó}
+    \end{nicsindent}
+    \nicsitem{Lua\TeX-ben implementált részek}
+    \begin{nicsindent}
+      \nicsitem{verbatim, ami különben nehéz: it's hard to stop}
+      \nicsitem{exporting, sub-compilation, caching}
+      \nicsitem{PDF zooming (adjustbox)}
+    \end{nicsindent}
+  \end{nicscolumn}
+\end{slide}
+
+\begin{slide}{PDF copy-paste, accessibility}{Not very good \LaTeX support, anybody knows the PDF primitives?}
+  \begin{nicscolumn}
+    \nicsitem{Copy-paste is problematic in PDF: no concept of ``line''}
+    \nicsitem{Glyphs are just put at the right places}
+    \nicsitem{The viewer ``figures out'' what is a line for you to copy-paste}
+    \nicsitem{This doesn't work well with indented source code and double spaces}
+    \nicsitem{Interestingly, \mono{xpdf} is your best bet for copy-pasting indented code}
+    \nicsbigskip
+    \nicsitem{Accessibility (screen readers) is also problematic}
+  \end{nicscolumn}
+\end{slide}
+
+\begin{slide}{PDF tools}{}
+  \begin{nicscolumn}
+    \nicsitem{Prezikhez használjatok \mono{pdfpc}-t}
+    \begin{nicsindent}
+      \nicsitem{Két videó kimenetet használ}
+      \nicsitem{Hallgatók: teljes slide}
+      \nicsitem{Előadó: slide + következő slide + notes}
+      \nicsitem{Lehet ``lézer pointerrel'' mutogatni}
+      \nicsitem{Lehet rajzolni}
+      \nicsitem{Lehet freezelni és úgy lapozgatni}
+    \end{nicsindent}
+    \nicsitem{Preview: evince vagy mupdf}
+    \nicsitem{Visual PDF diff: \nicscmdline{diffpdf -a}}
+  \end{nicscolumn}
+\end{slide}
+
+\begin{slide}{\TeX\ run}{Basic makró debugging}
+  \begin{nicscolumn}
+    \nicsitem{\nicscmdline{luatex '\bs relax\bs scrollmode'}}
+    \nicsitem{\mono{*} is the \TeX\ prompt}
+    \nicsitem{Try, explain: \nicscmdline{\bs show\bs centerline}, then \nicscmdline{\bs show\bs line}}
+    \nicsitem{Try, explain: \nicscmdline{\bs show\bs lineskip}, then \nicscmdline{\bs showthe\bs lineskip}}
+    \nicsitem{Try, explain: \nicscmdline{\bs message\{\bs the\bs lineskip\}}}
+  \end{nicscolumn}
+\end{slide}
+
+\begin{slide}{\TeX\ hello world}{While trying to be minimal}
+  \begin{nicscolumn}
+    \nicsitem{Kód (\mono{hello.tex}):}
+    \nicsexterncode{tex}
+    \begin{nicsextern}[]{}
+      Hello World
+      \bye
+    \end{nicsextern}
+    \nicsitem{Fordítás: \nicscmdline{luatex hello.tex}}
+    \nicsitem{Makródefiníció: \nicscmdline{\bs def\bs sosem\#1\{Sosem beszelek \#1 orajan\}}}
+    \nicsitem{Használjuk háromszor!}
+    \nicsitem{Megoldás: hello.tex}
+  \end{nicscolumn}
+\end{slide}
+
+\begin{slide}{\TeX\ challenge}{Írjuk ki ezerszer}
+  \begin{nicscolumn}
+    \nicspar{Hints:}
+    \begin{nicsindent}
+      \nicsitem{\nicscmdline{\bs show\bs loop}}
+      \nicsitem{\nicscmdline{\bs show\bs repeat}}
+      \nicsitem{\nicscmdline{\bs show\bs iterate}}
+      \nicsitem{\nicscmdline{\bs advance\bs count4142 by 1}}
+      \nicsitem{\nicscmdline{\bs ifnum\bs count4142 < 1000 almafa\bs else kortefa\bs fi}}
+      \nicsitem{Megoldás: \mono{ezerszer.tex}}
+      \nicsitem{Megoldás 2: \mono{ezerszer-lua.tex}}
+      \nicsitem{Megnézni: \mono{tizszer.tex}}
+    \end{nicsindent}
+  \end{nicscolumn}
+\end{slide}
+
+\begin{slide}{\TeX\ catcodes}{Interesting concept, not found elsewhere}
+  \begin{nicscolumn}
+    \nicsitem{A \TeX\ tokenizerjét újra lehet programozni catcode-ok mentén}
+  \end{nicscolumn}
+  \begin{nicscolumn*}{1cm}{2.6cm}{5cm}
+    \nicsitem{0: escape (\bs)}
+    \nicsitem{1: bgroup (\{)}
+    \nicsitem{2: egroup (\})}
+    \nicsitem{3: math ($)}
+    \nicsitem{4: alignment (&)}
+    \nicsitem{5: eol (enter)}
+    \nicsitem{6: param (\#)}
+    \nicsitem{7: superscript (^)}
+  \end{nicscolumn*}
+  \begin{nicscolumn*}{8cm}{2.6cm}{7cm}
+    \nicsitem{8: subscript (_)}
+    \nicsitem{9: ignored (ascii null)}
+    \nicsitem{10: space (space)}
+    \nicsitem{11: letters (a..z A..Z)}
+    \nicsitem{12: other (everything else)}
+    \nicsitem{13: active (\tld)}
+    \nicsitem{14: comment (\%)}
+    \nicsitem{15: invalid (delete)}
+  \end{nicscolumn*}
+  \begin{nicscolumn*}{1cm}{7.3cm}{15cm}
+    \nicsitem{See \mono{catcodes-*.tex}!  \bold{Once tokenized, stays tokenized!}}
+  \end{nicscolumn*}
+\end{slide}
+
+\begin{slide}{\TeX\ catcodes}{Makró neve csak betűkből állhat... Tényleg?}
+  \begin{nicscolumn}
+    \nicsitem{Common trick: makró névbe kényelmes lenne valami nem betű}
+    \nicsitem{Hogy a \nicscmdline{\bs bazihosszunevmertenigyprogramozok} lehessen \\
+      \nicscmdline{\bs bazi@hosszu@nev@mert@en@igy@programozok}}
+    \nicsitem{Megoldás: kukacot betűvé kódolni \mono{\bs def} előtt, aztán vissza}
+    \nicsitem{Szokás: internal nevek tartalmaznak kukacot, publikok nem}
+    \nicsitem{\LaTeX\ csomag elején beváltunk}
+    \nicsitem{Ez elterjedt, ezért \LaTeX-ben: \nicscmdline{\bs makeatletter}, \nicscmdline{\bs makeatother} \\
+      (A \LaTeX\ úgy általában NAGYON NAGY és nem fér bele sehogy 2 órába.)}
+    \nicsbigskip
+    \nicsitem{nics catcodes: \mono{nics/src/nics-slide.tex} vége}
+  \end{nicscolumn}
+\end{slide}
+
+\begin{slide}{\TeX\ boxes}{Overview}
+  \begin{nicscolumn}
+    \nicsitem{Minden vboxokban lévő hboxok sokasága (demó: \mono{boxes.log})}
+    \nicsitem{Expliciten is lehet őket készíteni: \nicscmdline{\bs \{v,h\}box\{content\}}}
+    \nicsitem{Implicit dobozolásnak köze van a módokhoz:}
+    \begin{nicsindent}
+      \nicsitem{Alapból vertical módban vagyunk, oldalakat tördelünk}
+      \nicsitem{Ha jön valami betű amit renderelni kell, akkor
+        horizontal módba váltunk és sorokat tördelünk (ez a váltás implicit)}
+      \nicsitem{\mono{\bs par} visszavált, a két enter rak egy
+        \mono{\bs par}-t}
+      \nicsitem{Ha matekba váltunk, arra van egy külön matek mód}
+    \end{nicsindent}
+    \nicsitem{Amikor expliciten dobozolunk, akkor ``restricted'' h vagy v mód}
+    \nicsitem{Restricted módban nincs tördelés (sor vagy oldal)}
+    \nicsitem{Amikor non-restricted vmódban kész egy oldal, akkor \mono{shipout}}
+  \end{nicscolumn}
+\end{slide}
+
+\begin{slide}{nics boxes}{A trükkök, amiket használunk}
+  \begin{nicscolumn}
+    \nicsitem{dimen: távolság, pl. 1in, 5cm, 10pt, use emacs to convert}
+    \nicsitem{\nicsleadword{glue:} rugó jobb név lenne, \\ flexibilis hármas (dimen, nyúlás, összenyomódás)}
+    \nicsitem{Demó: \mono{glue.tex}}
+    \nicsitem{A \mono{\bs hss} és \mono{\bs vss} nagyon useful és sokrétű}
+    \nicsitem{Mostmár meg tudjuk érteni a \mono{\bs centerline} makrót}
+  \end{nicscolumn}
+\end{slide}
+
+\begin{slide}{\TeX\ grouping}{Ugyanaz, mint más nyelvekben a szkóp}
+  \begin{nicscolumn}
+    \nicsitem{Ami kapcsosok között történik, az kapcsosok között marad}
+    \nicsitem{\mono{count}, \mono{def}, \mono{dimen}, stb., kivéve, ha prefixed with \mono{\bs global}}
+    \nicsitem{Nem minden kapcsos group: pl. \mono{def} vagy \mono{\{v,h\}box} kapcsosa}
+    \nicsitem{\LaTeX-ben minden \mono{begin..end} environment usage egy group}
+    \nicsitem{Hosszú makrók problémásak, common trick: \mono{\bs show\bs centerline}}
+    \nicsitem{Kapcsosok kapcsos nélkül: \mono{\bs bgroup} és \mono{\bs egroup}}
+    \nicsitem{\LaTeX\ savebox demó: \mono{savebox.tex}}
+  \end{nicscolumn}
+\end{slide}
+
+\begin{slide}{\TeX\ documentation}{Kicsit szétszórt}
+  \begin{nicscolumn}
+    \nicspar{A dokumentáció for historical reasons nagyon szétszórt:}
+    \nicsitem{\TeX Book for the basics, must read (but not all chapters)}
+    \nicsitem{e\TeX: \mono{etex_man.pdf}}
+    \nicsitem{Lua\TeX: \mono{luatex.pdf}}
+    \nicsitem{Helper package: \mono{luacode.pdf}}
+    \nicsitem{\LaTeX, ha muszáj valamit tudni: \mono{source2e.pdf}}
+    \nicsitem{TikZ, ha rajzolni kell: \mono{pgfmanual.pdf}}
+    \nicsitem{Egy nagyon érdekes dolog \LaTeX\ utálóknak: opmac}
+    \nicsbigskip
+    \nicsitem{Ha jól állunk idővel, itt legyen TikZ demó és tanítás (basics)}
+  \end{nicscolumn}
+\end{slide}
+
+\begin{slide}{nics code reading}{}
+  \begin{nicscolumn}
+    \nicsitem{Mostmár mindent tudunk, hogy olvassunk egy kis kódot}
+    \begin{nicsindent}
+      \nicsitem{\mono{nics-cached.tex}}
+      \nicsitem{\mono{nics-slide.tex}}
+      \nicsitem{\mono{nics-content.tex}}
+      \nicsbigskip
+      \nicsitem{\mono{nics-extern.tex} + \mono{nics-extern.lua}}
+      \nicsbigskip
+      \nicsitem{\mono{nics-zoom} + \mono{nics-aftersetbox}}
+    \end{nicsindent}
+  \end{nicscolumn}
+\end{slide}
+
+\begin{slide}{Live coding}{Bug fixing}
+  \begin{nicscolumn}
+    \nicsitem{Bug report: ha üres a második paraméter a title slideon,
+      akkor is van sötétítő buborékja, pedig akkor inkább ne legyen!}
+    \nicsitem{Write a test!  Mentsük el az MD5-jét!}
+    \nicsitem{Fix the bug!  Csak a teszt MD5-je változhat}
+  \end{nicscolumn}
+\end{slide}
+
+% tikz
+% slide url
+% documentation where
+
+\end{document}
